@@ -1,10 +1,6 @@
 local MP = minetest.get_modpath("mapserver")
 dofile(MP .. "/bridge/defaults.lua")
 dofile(MP .. "/bridge/players.lua")
-dofile(MP .. "/bridge/advtrains.lua")
-dofile(MP .. "/bridge/minecart.lua")
-dofile(MP .. "/bridge/locator.lua")
-
 
 -- mapserver http bridge
 local has_advtrains = minetest.get_modpath("advtrains")
@@ -15,6 +11,18 @@ local has_monitoring = minetest.get_modpath("monitoring")
 local metric_post_size
 local metric_processing_post_time
 local metric_post_time
+
+if has_advtrain then
+	dofile(MP .. "/bridge/advtrains.lua")
+end
+
+if has_minecart then
+	dofile(MP .. "/bridge/minecart.lua")
+end
+
+if has_locator then
+	dofile(MP .. "/bridge/locator.lua")
+end
 
 if has_monitoring then
 	metric_post_size = monitoring.counter(
