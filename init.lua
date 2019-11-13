@@ -15,25 +15,23 @@ dofile(MP.."/border.lua")
 dofile(MP.."/legacy.lua")
 dofile(MP.."/privs.lua")
 
-
--- optional mapserver-bridge stuff below
 local http = minetest.request_http_api()
 
-if http then
-	-- check if the mapserver.json is in the world-folder
+function read_config()
+	local mapserver_url = minetest.settings:get("mapserver.url")
+	local mapserver_key = minetest.settings:get("mapserver.key")
+
 	local path = minetest.get_worldpath().."/mapserver.json";
 	local mapserver_cfg
 
-	local file = io.open( path, "r" );
+	-- check if the mapserver.json is in the world-folder
+	local file = io.open(path, "r" );
 	if file then
 		local json = file:read("*all");
 		mapserver_cfg = minetest.parse_json(json);
 		file:close();
 		print("[Mapserver] read settings from 'mapserver.json'")
 	end
-
-	local mapserver_url = minetest.settings:get("mapserver.url")
-	local mapserver_key = minetest.settings:get("mapserver.key")
 
 	if mapserver_cfg and mapserver_cfg.webapi then
 		if not mapserver_key then
@@ -46,18 +44,19 @@ if http then
 		end
 	end
 
-	if not mapserver_url then error("mapserver.url is not defined") end
-	if not mapserver_key then error("mapserver.key is not defined") end
-
-	print("[Mapserver] starting mapserver-bridge with endpoint: " .. mapserver_url)
-	dofile(MP .. "/bridge/init.lua")
-
-	mapserver.bridge_init(http, mapserver_url, mapserver_key)
-
-else
-	print("[Mapserver] bridge not active, additional infos will not be visible on the map")
-
+	if mapserver_url and mapserver_key then
+		print("[Mapserver] starting mapserver-bridge with endpoint: " .. mapserver_url)
+		mapserver.bridge_init(http, mapserver_url, mapserver_key)
+	else
+		-- Retry config in a moment
+		minetest.after(1, read_config)
+	end
 end
 
-
-print("[OK] Mapserver")
+-- optional mapserver-bridge stuff below
+if http then
+	dofile(MP.."/bridge/init.lua")
+	read_config()
+else
+	print("[Mapserver] bridge not active, additional infos will not be visible on the map")
+end

@@ -12,7 +12,7 @@ local metric_post_size
 local metric_processing_post_time
 local metric_post_time
 
-if has_advtrain then
+if has_advtrains then
 	dofile(MP .. "/bridge/advtrains.lua")
 end
 
